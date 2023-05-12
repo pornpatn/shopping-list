@@ -301,7 +301,7 @@ function ChecklistCheckingPage() {
 
     return (
         <React.Fragment>
-            <Container disableGutters>
+            <Container maxWidth="xl" disableGutters>
                 <Box sx={{
                     display: 'flex',
                     padding: 1,

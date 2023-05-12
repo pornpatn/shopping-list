@@ -77,7 +77,7 @@ function ChecklistPage() {
     const formatDate = (date) => moment(date).format('ll');
 
     return (
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
             <Typography
                 component="h1"
                 variant="h5"

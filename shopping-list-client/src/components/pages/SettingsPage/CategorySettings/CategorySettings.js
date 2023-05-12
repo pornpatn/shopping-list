@@ -86,7 +86,7 @@ function CategorySettings() {
 
     return (
         <React.Fragment>
-            <Container maxWidth="lg" disableGutters>
+            <Container maxWidth="xl" disableGutters>
                 <PageHeader title="Categories">
                     <Button
                         size="small"

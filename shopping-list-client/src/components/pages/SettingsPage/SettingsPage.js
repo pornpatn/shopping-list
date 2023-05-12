@@ -58,7 +58,7 @@ function SettingsCard({ card }) {
 
 function SettingsPage() {
     return (
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
             <Typography
                 component="h1"
                 variant="h5"

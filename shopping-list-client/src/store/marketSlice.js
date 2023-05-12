@@ -1,14 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-
-let nextId = 7;
-const fakeMarkets = [
-    { id: 1, name: 'Thai Market N & N' },
-    { id: 2, name: 'Wonder Produce' },
-    { id: 3, name: 'S.J Distributors' },
-    { id: 4, name: 'Costco' },
-    { id: 5, name: 'Sysco' },
-    { id: 6, name: 'Restaurant Depot' },
-];
+import ChecklistAPI from '../api/checklistAPI';
 
 export const NEW_MARKET_TEMPLATE = {
     name: 'New Market',
@@ -20,28 +11,13 @@ const initialState = {
     error: null,
 };
 
-export const fetchMarketList = createAsyncThunk('market/fetchMarketList', async () => {
-    // const response = await client.get('/fakeApi/posts')
-    // return response.data
-    return fakeMarkets;
-});
+export const fetchMarketList = createAsyncThunk('market/fetchMarketList', async () => ChecklistAPI.fetchMarkets());
 
-export const createMarket = createAsyncThunk('market/createMarket', async ({ data }) => {
-    // const response = await client.post('/fakeApi/posts', initialPost);
-    // return response.data;
+export const createMarket = createAsyncThunk('market/createMarket', async ({ data }) => ChecklistAPI.createMarket(data));
 
-    console.log('create market');
+export const updateMarket = createAsyncThunk('market/updateMarket', async ({ data }) => ChecklistAPI.updateMarket(data));
 
-    return ({ ...data, id: nextId++ });
-});
-
-export const updateMarket = createAsyncThunk('market/updateMarket', async ({ data }) => {
-    return data;
-});
-
-export const deleteMarket = createAsyncThunk('market/deleteMarket', async ({ id }) => {
-    return id;
-});
+export const deleteMarket = createAsyncThunk('market/deleteMarket', async ({ id }) => ChecklistAPI.deleteMarket(id));
 
 export const marketSlice = createSlice({
     name: 'market',
@@ -53,7 +29,6 @@ export const marketSlice = createSlice({
                 state.entities = action.payload;
             })
             .addCase(createMarket.fulfilled, (state, action) => {
-                console.log('create market fulfilled');
                 state.entities.push(action.payload);
             })
             .addCase(updateMarket.fulfilled, (state, action) => {

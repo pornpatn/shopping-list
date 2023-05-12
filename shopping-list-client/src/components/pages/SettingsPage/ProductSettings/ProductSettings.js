@@ -140,7 +140,7 @@ function ProductSettings() {
         const foundItem = entities.find(item => item.id === id);
         if (foundItem) {
             setSelectedItem(foundItem);
-            setItemCategory(foundItem.category.name);
+            setItemCategory(foundItem.category);
             setItemCategoryCustom(null);
             setItemTags(foundItem.tags.map(tag => tag.name));
             setEditDialogOpen(true);
@@ -153,7 +153,13 @@ function ProductSettings() {
 
     const handleEditSave = (e) => {
         e.preventDefault();
-        dispatch(updateItem({ data: selectedItem })).unwrap();
+        const updatedItem = {
+            ...selectedItem,
+            category: itemCategory,
+            tags: itemTags.map(tag => tags.find(t => t.name === tag) ?? { name: tag }),
+        };
+        console.log('updated item: ', updatedItem);
+        dispatch(updateItem({ data: updatedItem })).unwrap();
         setEditDialogOpen(false);
     };
 
@@ -271,7 +277,7 @@ function ProductSettings() {
 
     return (
         <React.Fragment>
-            <Container maxWidth="lg" disableGutters>
+            <Container maxWidth="xl" disableGutters>
                 <PageHeader title="Products">
                     <Button
                         size="small"

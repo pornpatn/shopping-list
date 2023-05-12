@@ -1,11 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-
-let nextId = 4;
-const fakeTags = [
-    { id: '1', name: 'Freezer' },
-    { id: '2', name: 'Walkin' },
-    { id: '3', name: 'Shelves' },
-];
+import ChecklistAPI from '../api/checklistAPI';
 
 export const NEW_TAG_TEMPLATE = {
     name: 'New TAG',
@@ -17,28 +11,13 @@ const initialState = {
     error: null,
 };
 
-export const fetchTagList = createAsyncThunk('tag/fetchTagList', async () => {
-    // const response = await client.get('/fakeApi/posts')
-    // return response.data
-    return fakeTags;
-});
+export const fetchTagList = createAsyncThunk('tag/fetchTagList', async () => ChecklistAPI.fetchTags());
 
-export const createTag = createAsyncThunk('tag/createTag', async ({ data }) => {
-    // const response = await client.post('/fakeApi/posts', initialPost);
-    // return response.data;
+export const createTag = createAsyncThunk('tag/createTag', async ({ data }) => ChecklistAPI.createTag(data));
 
-    console.log('create tag');
+export const updateTag = createAsyncThunk('tag/updateTag', async ({ data }) => ChecklistAPI.updateTag(data));
 
-    return ({ ...data, id: '' + nextId++ });
-});
-
-export const updateTag = createAsyncThunk('tag/updateTag', async ({ data }) => {
-    return data;
-});
-
-export const deleteTag = createAsyncThunk('tag/deleteTag', async ({ id }) => {
-    return id;
-});
+export const deleteTag = createAsyncThunk('tag/deleteTag', async ({ id }) => ChecklistAPI.deleteTag(id));
 
 export const tagSlice = createSlice({
     name: 'tag',
@@ -50,7 +29,6 @@ export const tagSlice = createSlice({
                 state.entities = action.payload;
             })
             .addCase(createTag.fulfilled, (state, action) => {
-                console.log('create tag fulfilled');
                 state.entities.push(action.payload);
             })
             .addCase(updateTag.fulfilled, (state, action) => {
