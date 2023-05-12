@@ -2,9 +2,9 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 let nextId = 4;
 const fakeCategories = [
-    { id: 1, name: 'Meats' },
-    { id: 2, name: 'Vegetagles' },
-    { id: 3, name: 'Packages' },
+    { id: '1', name: 'Meats' },
+    { id: '2', name: 'Vegetagles' },
+    { id: '3', name: 'Packages' },
 ];
 
 export const NEW_CATEGORY_TEMPLATE = {
@@ -29,7 +29,7 @@ export const createCategory = createAsyncThunk('category/createCategory', async 
 
     console.log('create category');
 
-    return ({ ...data, id: nextId++ });
+    return ({ ...data, id: '' + nextId++ });
 });
 
 export const updateCategory = createAsyncThunk('category/updateCategory', async ({ data }) => {

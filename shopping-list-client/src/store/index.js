@@ -3,6 +3,7 @@ import categoryReducer from './categorySlice';
 import tagReducer from './tagSlice';
 import productReducer from './productSlice';
 import marketReducer from './marketSlice';
+import checklistReducer from './checklistSlice';
 
 export const store = configureStore({
     reducer: {
@@ -10,5 +11,6 @@ export const store = configureStore({
         tag: tagReducer,
         product: productReducer,
         market: marketReducer,
+        checklist: checklistReducer,
     },
 });

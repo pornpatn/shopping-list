@@ -20,13 +20,13 @@ import { fetchCategoryList } from '../../../store/categorySlice';
 import { fetchTagList } from '../../../store/tagSlice';
 import { fetchProductList } from '../../../store/productSlice';
 import { fetchMarketList } from '../../../store/marketSlice';
+import { fetchChecklistList, fetchChecklistById } from '../../../store/checklistSlice';
 
 const getRouter = (dispatch) => createBrowserRouter([
     {
         path: '/',
         element: <Layout />,
         loader: () => {
-            console.log('root loader');
             return null;
         },
         children: [
@@ -35,26 +35,30 @@ const getRouter = (dispatch) => createBrowserRouter([
                 element: <LoginPage />,
             },
             {
-                path: 'checklist',
+                path: 'checklists',
                 element: <Outlet />,
                 children: [
                     {
                         index: true,
-                        element: <ChecklistPage />
-                    },
-                    {
-                        path: ':id',
-                        element: <ChecklistCheckingPage />,
-                        loader: ({ params }) => {
-                            console.log('load checklist {params}');
+                        element: <ChecklistPage />,
+                        loader: () => {
+                            dispatch(fetchChecklistList({ filter: null }));
                             return null;
                         },
                     },
                     {
-                        path: ':id/review',
+                        path: ':checklistId',
+                        element: <ChecklistCheckingPage />,
+                        loader: ({ params }) => {
+                            dispatch(fetchChecklistById(params));
+                            return null;
+                        },
+                    },
+                    {
+                        path: ':checklistId/review',
                         element: <ChecklistReviewPage />,
                         loader: ({ params }) => {
-                            console.log('load checklist {params} for review');
+                            dispatch(fetchChecklistById(params));
                             return null;
                         },
                     },

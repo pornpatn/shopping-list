@@ -2,9 +2,9 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 let nextId = 4;
 const fakeTags = [
-    { id: 1, name: 'Freezer' },
-    { id: 2, name: 'Walkin' },
-    { id: 3, name: 'Shelves' },
+    { id: '1', name: 'Freezer' },
+    { id: '2', name: 'Walkin' },
+    { id: '3', name: 'Shelves' },
 ];
 
 export const NEW_TAG_TEMPLATE = {
@@ -29,7 +29,7 @@ export const createTag = createAsyncThunk('tag/createTag', async ({ data }) => {
 
     console.log('create tag');
 
-    return ({ ...data, id: nextId++ });
+    return ({ ...data, id: '' + nextId++ });
 });
 
 export const updateTag = createAsyncThunk('tag/updateTag', async ({ data }) => {

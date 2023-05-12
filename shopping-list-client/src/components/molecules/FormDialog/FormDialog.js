@@ -9,13 +9,17 @@ import CloseIcon from '@mui/icons-material/Close';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 
-function FormDialog({ open, onClose, onSave, title, item, setItem, children }) {
+const DEFAULT_DIALOG_PROPS = {
+    fullScreen: true,
+    scroll: 'paper',
+};
+
+function FormDialog({ open, onClose, onSave, title, dialogProps = DEFAULT_DIALOG_PROPS, children }) {
     return (
         <Dialog
-            fullScreen
             open={open}
             onClose={onClose}
-            scroll="paper"
+            {...dialogProps}
         >
             <AppBar sx={{ position: 'relative' }} color="inherit">
                 <Toolbar>

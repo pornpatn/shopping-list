@@ -37,7 +37,8 @@ function CategorySettings() {
         setCreateDialogOpen(false);
     };
 
-    const handleCreateSave = () => {
+    const handleCreateSave = (e) => {
+        e.preventDefault();
         dispatch(createItem({ data: selectedItem })).unwrap();
         setCreateDialogOpen(false);
     };
@@ -54,7 +55,8 @@ function CategorySettings() {
         setEditDialogOpen(false);
     };
 
-    const handleEditSave = () => {
+    const handleEditSave = (e) => {
+        e.preventDefault();
         dispatch(updateItem({ data: selectedItem })).unwrap();
         setEditDialogOpen(false);
     };
@@ -62,7 +64,6 @@ function CategorySettings() {
     const handleDeleteClick = () => {
         confirm({ description: "This action is permanent!" })
             .then(() => {
-                console.log('deleted');
                 dispatch(deleteItem({ id: selectedItem.id })).unwrap();
                 setEditDialogOpen(false);
             })
@@ -123,7 +124,7 @@ function CategorySettings() {
                 onSave={handleCreateSave}
                 title={'Create Category'}
             >
-                <Box component={'form'}>
+                <Box component={'form'} onSubmit={handleCreateSave}>
                     {renderFormContent()}
                 </Box>
             </FormDialog>
@@ -134,7 +135,7 @@ function CategorySettings() {
                 onSave={handleEditSave}
                 title={'Edit Category'}
             >
-                <Box component={'form'}>
+                <Box component={'form'} onSubmit={handleEditSave}>
                     {renderFormContent()}
                     <Button
                         variant="contained"

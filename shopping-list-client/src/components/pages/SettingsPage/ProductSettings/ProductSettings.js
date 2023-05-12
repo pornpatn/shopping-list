@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -11,12 +11,11 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import { useConfirm } from "material-ui-confirm";
 import PageHeader from '../../../molecules/PageHeader';
 import Search from '../../../molecules/Search';
 import FormDialog from '../../../molecules/FormDialog';
+import ProductFilter from '../../../molecules/ProductFilter';
 import {
     createProduct as createItem,
     updateProduct as updateItem,
@@ -44,6 +43,77 @@ function ProductSettings() {
 
     const confirm = useConfirm();
 
+    const [search, setSearch] = useState("");
+
+    const [checkedCategories, setCheckedCategories] = useState([]);
+    const [checkedTags, setCheckedTags] = useState([]);
+
+    const filters = [
+        {
+            name: 'category',
+            label: 'Filter by Categories',
+            options: categories.map(category => ({ id: category.id, label: category.name })),
+            selected: checkedCategories,
+        },
+        {
+            name: 'tag',
+            label: 'Filter by Tags',
+            options: tags.map(tag => ({ id: tag.id, label: tag.name })),
+            selected: checkedTags,
+        }
+    ];
+
+    const handleFiltersChange = (event) => {
+        const { name, selected } = event.target;
+        if (name === 'category') {
+            setCheckedCategories(selected);
+        } else if (name === 'tag') {
+            setCheckedTags(selected);
+        }
+    };
+
+    // const sorters = [
+    //     {
+    //         name: 'category',
+    //         label: 'Category',
+    //         iteratees: group => group.category,
+    //     },
+    //     {
+    //         name: 'name',
+    //         label: 'Name',
+    //         iteratees: group => group.name,
+    //     },
+    //     {
+    //         name: 'created',
+    //         label: 'Created',
+    //         iteratees: group => group.created,
+    //     },
+    //     {
+    //         name: 'modified',
+    //         label: 'Modified',
+    //         iteratees: group => group.modified,
+    //     }
+    // ];
+    // const [sortBy, setSortBy] = useState({
+    //     name: '',
+    //     direction: 'asc',
+    //     sorter: null,
+    // });
+    
+    // const handleSortersChange = (event) => {
+    //     setSortBy(event.target);
+    // };
+
+    const products = useMemo(() => {
+        const searchTerm = search.toLowerCase();
+
+        const isMatched = (product) => product.name.toLowerCase().includes(searchTerm)
+            && ((checkedCategories.length === 0) || checkedCategories.includes(product.category.id))
+            && ((checkedTags.length === 0) || product.tags.find(tag => checkedTags.includes(tag.id)));
+
+        return entities.filter(product => isMatched(product));
+    }, [entities, search, checkedCategories, checkedTags]);
+
     const handleCreateClick = () => {
         setSelectedItem({ ...NEW_ITEM_TEMPLETE });
         setItemCategory(null);
@@ -55,7 +125,8 @@ function ProductSettings() {
         setCreateDialogOpen(false);
     };
 
-    const handleCreateSave = () => {
+    const handleCreateSave = (e) => {
+        e.preventDefault();
         const newItem = {
             ...selectedItem,
             category: itemCategoryCustom ? { name: itemCategoryCustom } : itemCategory,
@@ -80,7 +151,8 @@ function ProductSettings() {
         setEditDialogOpen(false);
     };
 
-    const handleEditSave = () => {
+    const handleEditSave = (e) => {
+        e.preventDefault();
         dispatch(updateItem({ data: selectedItem })).unwrap();
         setEditDialogOpen(false);
     };
@@ -88,7 +160,6 @@ function ProductSettings() {
     const handleDeleteClick = () => {
         confirm({ description: "This action is permanent!" })
             .then(() => {
-                console.log('deleted');
                 dispatch(deleteItem({ id: selectedItem.id })).unwrap();
                 setEditDialogOpen(false);
             })
@@ -118,7 +189,7 @@ function ProductSettings() {
 
     const renderItemsByCategories = () => {
         return categories.map((category) => {
-            const itemsToRender = entities.filter(item => item.category?.id === category.id);
+            const itemsToRender = products.filter(item => item.category?.id === category.id);
             if (itemsToRender.length === 0) {
                 return null;
             }
@@ -132,7 +203,7 @@ function ProductSettings() {
     };
 
     const renderItemsWithoutCategories = () => {
-        const itemsToRender = entities.filter(item => item.category === null);
+        const itemsToRender = products.filter(item => item.category === null);
         if (itemsToRender.length === 0) {
             return null;
         }
@@ -179,11 +250,10 @@ function ProductSettings() {
                 label="Tags"
                 multiple
                 fullWidth
-                // disablePortal
+                disablePortal
                 freeSolo
                 value={itemTags}
                 onChange={(_event, newValue) => {
-                    console.log('tag change: ', newValue);
                     setItemTags(newValue);
                 }}
                 options={tags.map(tag => tag.name)}
@@ -215,13 +285,14 @@ function ProductSettings() {
 
                 <Toolbar disableGutters>
                     <Box sx={{ flexGrow: 1 }} />
-                    <Search />
-                    <IconButton
-                        size="large"
-                        color="inherit"
-                    >
-                        <FilterListIcon />
-                    </IconButton>
+                    <Search value={search} onChange={(e) => setSearch(e.target.value)} />
+                    <ProductFilter
+                        filters={filters}
+                        onFiltersChange={handleFiltersChange}
+                        // sortBy={sortBy}
+                        // sorters={sorters}
+                        // onSortersChange={handleSortersChange}
+                    />
                 </Toolbar>
 
                 {(entities.length === 0) && (
@@ -243,7 +314,7 @@ function ProductSettings() {
                 onSave={handleCreateSave}
                 title={'Create Product'}
             >
-                <Box component={'form'}>
+                <Box component={'form'} onSubmit={handleCreateSave}>
                     {renderFormContent()}
                 </Box>
             </FormDialog>
@@ -254,7 +325,7 @@ function ProductSettings() {
                 onSave={handleEditSave}
                 title={'Edit Product'}
             >
-                <Box component={'form'}>
+                <Box component={'form'} onSubmit={handleEditSave}>
                     {renderFormContent()}
                     <Button
                         variant="contained"

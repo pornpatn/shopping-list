@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import moment from 'moment';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -16,14 +18,30 @@ import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import { Dialog, DialogContent, DialogActions, DialogTitle, TextField } from '@mui/material';
+import {
+    createChecklist,
+    selectCurrentChecklist,
+    selectOtherInProgressChecklists,
+    selectPreviousChecklists,
+    NEW_CHECKLIST_TEMPLATE,
+} from '../../../store/checklistSlice';
 
 function ChecklistPage() {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const currentChecklist = useSelector(selectCurrentChecklist);
+    const otherInProgressChecklists = useSelector(selectOtherInProgressChecklists);
+    const previousChecklists = useSelector(selectPreviousChecklists);
+
     const [newChecklistDialogOpen, setNewChecklistDialogOpen] = useState(false);
     const [name, setName] = useState('');
 
     const handleNewChecklistClick = () => {
-        const date = new Date();
-        setName(`Checklist ${date.getMonth()}/${date.getDate()}/${date.getFullYear()}`);
+        if (!name) {
+            const date = new Date();
+            setName(`Checklist ${date.getMonth()}/${date.getDate()}/${date.getFullYear()}`);
+        }
         setNewChecklistDialogOpen(true);
     };
 
@@ -31,9 +49,32 @@ function ChecklistPage() {
         setNewChecklistDialogOpen(false);
     };
 
-    const handleNewChecklistCreate = () => {
+    const handleNewChecklistCreate = (e) => {
+        e.preventDefault();
+
         setNewChecklistDialogOpen(false);
+        const newItem = {
+            ...NEW_CHECKLIST_TEMPLATE,
+            name,
+        };
+        dispatch(createChecklist({ data: newItem })).then(({ payload }) => {
+            if (payload) {
+                navigate(payload.id);
+            }
+        });
     };
+
+    const formatItems = (items) => {
+        if (!items || items.length === 0) {
+            return 'no items';
+        }
+
+        const text = items.slice(0, 3).map(item => `${item.qty} ${item.product.name}`).join(', ');
+
+        return items.length > 3 ? text + '...' : text;
+    }
+
+    const formatDate = (date) => moment(date).format('ll');
 
     return (
         <Container maxWidth="lg">
@@ -45,30 +86,33 @@ function ChecklistPage() {
             >
                 Checklist
             </Typography>
+
             {/* New Checklist or Current Checklist */}
             <Box sx={{ paddingBottom: 2 }}>
                 <Grid container spacing={4}>
-                    <Grid item xs={12} sm={6} md={8}>
-                        <Card
-                            sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-                        >
-                            <CardActionArea to={'1'} component={Link}>
-                                <CardContent sx={{ flexGrow: 1 }}>
-                                    <Typography gutterBottom variant="h5" component="h2">
-                                        Continue Checklist
-                                    </Typography>
-                                    <Typography variant="body1" component="h3">
-                                        Thai Market
-                                    </Typography>
-                                    <Typography variant="body2" component="div">Apr 22, 2023</Typography>
-                                    <Typography variant="body2" component="div">5 Tomato, 2 Chicken, 1 Coconut Large, ...</Typography>
-                                </CardContent>
-                            </CardActionArea>
-                            <CardActions>
-                                <Button variant='contained' to={'1'} component={Link}>Continue</Button>
-                            </CardActions>
-                        </Card>
-                    </Grid>
+                    {currentChecklist && (
+                        <Grid item xs={12} sm={6} md={8}>
+                            <Card
+                                sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+                            >
+                                <CardActionArea to={currentChecklist.id} component={Link}>
+                                    <CardContent sx={{ flexGrow: 1 }}>
+                                        <Typography gutterBottom variant="h5" component="h2">
+                                            Continue Checklist
+                                        </Typography>
+                                        <Typography variant="body1" component="h3">
+                                            {currentChecklist.name}
+                                        </Typography>
+                                        <Typography variant="body2" component="span" sx={{ paddingRight: 1 }}>{formatDate(currentChecklist.modified)}:</Typography>
+                                        <Typography variant="body2" component="span">{formatItems(currentChecklist.items)}</Typography>
+                                    </CardContent>
+                                </CardActionArea>
+                                <CardActions>
+                                    <Button variant='contained' to={currentChecklist.id} component={Link}>Continue</Button>
+                                </CardActions>
+                            </Card>
+                        </Grid>
+                    )}
                     <Grid item xs={12} sm={6} md={4}>
                         <Card
                             sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
@@ -90,6 +134,7 @@ function ChecklistPage() {
                     </Grid>
                 </Grid>
             </Box>
+
             {/* List of other in-progress checklists */}
             <Typography
                 variant="subtitle1"
@@ -97,58 +142,39 @@ function ChecklistPage() {
             >
                 Other In-progress Checklist
             </Typography>
-            <List disablePadding>
-                <ListItem
-                    // key={item.id}
-                    // onClick={() => handleItemClick(item.id)}
-                    divider
-                    dense
-                    disableGutters
-                    secondaryAction={
-                        <IconButton edge="end" size="large" aria-label="continue">
-                            <ArrowRightIcon fontSize="inherit" />
-                        </IconButton>
-                    }
-                >
-                    <ListItemButton to={'2'} component={Link}>
-                        <ListItemText
-                            primary={'Thai Market'}
-                            primaryTypographyProps={{ variant: "subtitle2" }}
-                            secondary={(
-                                <React.Fragment>
-                                    <Typography variant="body2" component="div">Apr 22, 2023</Typography>
-                                    <Typography variant="body2" component="div">5 Tomato, 2 Chicken, 1 Coconut Large, ...</Typography>
-                                </React.Fragment>
-                            )}
-                        />
-                    </ListItemButton>
-                </ListItem>
-                <ListItem
-                    // key={item.id}
-                    // onClick={() => handleItemClick(item.id)}
-                    divider
-                    dense
-                    disableGutters
-                    secondaryAction={
-                        <IconButton edge="end" size="large" aria-label="continue">
-                            <ArrowRightIcon fontSize="inherit" />
-                        </IconButton>
-                    }
-                >
-                    <ListItemButton to={'3'} component={Link}>
-                        <ListItemText
-                            primary={'Wonder Market'}
-                            primaryTypographyProps={{ variant: "subtitle2" }}
-                            secondary={(
-                                <React.Fragment>
-                                    <Typography variant="body2" component="div">Apr 22, 2023</Typography>
-                                    <Typography variant="body2" component="div">5 Tomato, 2 Chicken, 1 Coconut Large, ...</Typography>
-                                </React.Fragment>
-                            )}
-                        />
-                    </ListItemButton>
-                </ListItem>
-            </List>
+            {(otherInProgressChecklists.length > 0) ? (
+                <List disablePadding>
+                    {otherInProgressChecklists.map(checklist => (
+                        <ListItem
+                            key={checklist.id}
+                            // onClick={() => handleItemClick(item.id)}
+                            divider
+                            dense
+                            disableGutters
+                            secondaryAction={
+                                <IconButton edge="end" size="large" aria-label="continue">
+                                    <ArrowRightIcon fontSize="inherit" />
+                                </IconButton>
+                            }
+                        >
+                            <ListItemButton to={checklist.id} component={Link}>
+                                <ListItemText
+                                    primary={checklist.name}
+                                    primaryTypographyProps={{ variant: "subtitle2" }}
+                                    secondary={(
+                                        <React.Fragment>
+                                            <Typography variant="body2" component="span" sx={{ paddingRight: 1 }}>{formatDate(checklist.modified)}:</Typography>
+                                            <Typography variant="body2" component="span">{formatItems(checklist.items)}</Typography>
+                                        </React.Fragment>
+                                    )}
+                                />
+                            </ListItemButton>
+                        </ListItem>
+                    ))}
+                </List>
+            ) : (
+                <div>-</div>
+            )}
             <Link to="all">View all checklists</Link>
             {/* Link to view all checklists */}
 
@@ -160,7 +186,7 @@ function ChecklistPage() {
             >
                 <DialogTitle>New Checklist</DialogTitle>
                 <DialogContent>
-                    <Box component={'form'}>
+                    <Box component={'form'} onSubmit={handleNewChecklistCreate}>
                         <TextField
                             id="name"
                             label="Name"
@@ -170,7 +196,7 @@ function ChecklistPage() {
                             onChange={(e) => { setName(e.target.value) }}
                             margin="normal"
                         />
-                        <Typography component="subtitle2">
+                        <Typography variant="subtitle2">
                             Copy from previous checklist:
                         </Typography>
                         <List
@@ -181,90 +207,29 @@ function ChecklistPage() {
                                 overflow: 'auto',
                             }}
                         >
-                            <ListItem
-                                // key={item.id}
-                                // onClick={() => handleItemClick(item.id)}
-                                divider
-                                dense
-                                disablePadding
-                                disableGutters
-                            >
-                                <ListItemButton to={'2'} component={Link}>
-                                    <ListItemText
-                                        primary={'Thai Market'}
-                                        primaryTypographyProps={{ variant: "subtitle2" }}
-                                        secondary={(
-                                            <React.Fragment>
-                                                <Typography variant="body2" component="div">Apr 22, 2023</Typography>
-                                                <Typography variant="body2" component="div">5 Tomato, 2 Chicken, 1 Coconut Large, ...</Typography>
-                                            </React.Fragment>
-                                        )}
-                                    />
-                                </ListItemButton>
-                            </ListItem>
-                            <ListItem
-                                // key={item.id}
-                                // onClick={() => handleItemClick(item.id)}
-                                divider
-                                dense
-                                disablePadding
-                                disableGutters
-                            >
-                                <ListItemButton to={'3'} component={Link} disablePadding>
-                                    <ListItemText
-                                        primary={'Wonder Market (Apr 22, 2023)'}
-                                        primaryTypographyProps={{ variant: "subtitle2" }}
-                                        secondary={(
-                                            <React.Fragment>
-                                                {/* <Typography variant="body2" component="div">Apr 22, 2023</Typography> */}
-                                                <Typography variant="body2" component="div">5 Tomato, 2 Chicken, 1 Coconut Large, ...</Typography>
-                                            </React.Fragment>
-                                        )}
-                                    />
-                                </ListItemButton>
-                            </ListItem>
-                            <ListItem
-                                // key={item.id}
-                                // onClick={() => handleItemClick(item.id)}
-                                divider
-                                dense
-                                disablePadding
-                                disableGutters
-                            >
-                                <ListItemButton to={'3'} component={Link} disablePadding>
-                                    <ListItemText
-                                        primary={'Wonder Market (Apr 22, 2023)'}
-                                        primaryTypographyProps={{ variant: "subtitle2" }}
-                                        secondary={(
-                                            <React.Fragment>
-                                                {/* <Typography variant="body2" component="div">Apr 22, 2023</Typography> */}
-                                                <Typography variant="body2" component="div">5 Tomato, 2 Chicken, 1 Coconut Large, ...</Typography>
-                                            </React.Fragment>
-                                        )}
-                                    />
-                                </ListItemButton>
-                            </ListItem>
-                            <ListItem
-                                // key={item.id}
-                                // onClick={() => handleItemClick(item.id)}
-                                divider
-                                dense
-                                disablePadding
-                                disableGutters
-                            >
-                                <ListItemButton to={'3'} component={Link} disablePadding>
-                                    <ListItemText
-                                        primary={'Wonder Market (Apr 22, 2023)'}
-                                        primaryTypographyProps={{ variant: "subtitle2" }}
-                                        secondary={(
-                                            <React.Fragment>
-                                                {/* <Typography variant="body2" component="div">Apr 22, 2023</Typography> */}
-                                                <Typography variant="body2" component="div">5 Tomato, 2 Chicken, 1 Coconut Large, ...</Typography>
-                                            </React.Fragment>
-                                        )}
-                                    />
-                                </ListItemButton>
-                            </ListItem>
+                            {previousChecklists.map(checklist => (
+                                <ListItem
+                                    key={checklist.id}
+                                    // onClick={() => handleItemClick(item.id)}
+                                    divider
+                                    dense
+                                    disablePadding
+                                    disableGutters
+                                >
+                                    <ListItemButton to={checklist.id} component={Link}>
+                                        <ListItemText
+                                            primary={checklist.name}
+                                            primaryTypographyProps={{ variant: "subtitle2" }}
+                                            secondary={(
+                                                <React.Fragment>
+                                                    <Typography variant="body2" component="span" sx={{ paddingRight: 1 }}>{formatDate(checklist.modified)}:</Typography>
+                                                    <Typography variant="body2" component="span">{formatItems(checklist.items)}</Typography>
+                                                </React.Fragment>
+                                            )}
+                                        />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
                         </List>
                     </Box>
                 </DialogContent>

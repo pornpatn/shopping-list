@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { styled, alpha } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
+import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
 
 const SearchContainer = styled('div')(({ theme }) => ({
     position: 'relative',
@@ -45,15 +47,39 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     },
 }));
 
-function Search() {
+function Search(props) {
+    const inputRef = useRef(null);
     return (
         <SearchContainer>
             <SearchIconWrapper>
                 <SearchIcon />
             </SearchIconWrapper>
             <StyledInputBase
+                inputRef={inputRef}
                 placeholder="Search…"
                 inputProps={{ 'aria-label': 'search' }}
+                {...props}
+                endAdornment={props.value ? (
+                    <IconButton
+                        aria-label="clear"
+                        onClick={() => {
+                            if (inputRef.current) {
+                                inputRef.current.value = '';
+
+                                if (props.onChange) {
+                                    const evt = { target: inputRef.current };
+                                    props.onChange(evt);
+                                }
+
+                                inputRef.current.focus();
+                            }
+                        }}
+                        edge="end"
+                        sx={{ marginRight: 1 }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                ) : (null)}
             />
         </SearchContainer>
     );
