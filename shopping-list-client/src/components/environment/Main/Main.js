@@ -13,8 +13,6 @@ import ChecklistCheckingPage from '../../pages/ChecklistPage/ChecklistCheckingPa
 import ChecklistReviewPage from '../../pages/ChecklistPage/ChecklistReviewPage';
 import SettingsPage from '../../pages/SettingsPage';
 import ProductSettings from '../../pages/SettingsPage/ProductSettings';
-import CategorySettings from '../../pages/SettingsPage/CategorySettings';
-import TagSettings from '../../pages/SettingsPage/TagSettings';
 import MarketSettings from '../../pages/SettingsPage/MarketSettings';
 import { fetchCategoryList } from '../../../store/categorySlice';
 import { fetchTagList } from '../../../store/tagSlice';
@@ -47,7 +45,7 @@ const getRouter = (dispatch) => createBrowserRouter([
                         },
                     },
                     {
-                        path: ':checklistId',
+                        path: ':id',
                         element: <ChecklistCheckingPage />,
                         loader: ({ params }) => {
                             dispatch(fetchChecklistById(params));
@@ -55,7 +53,7 @@ const getRouter = (dispatch) => createBrowserRouter([
                         },
                     },
                     {
-                        path: ':checklistId/review',
+                        path: ':id/review',
                         element: <ChecklistReviewPage />,
                         loader: ({ params }) => {
                             dispatch(fetchChecklistById(params));
@@ -75,14 +73,6 @@ const getRouter = (dispatch) => createBrowserRouter([
                     {
                         path: 'products',
                         element: <ProductSettings />
-                    },
-                    {
-                        path: 'categories',
-                        element: <CategorySettings />
-                    },
-                    {
-                        path: 'tags',
-                        element: <TagSettings />
                     },
                     {
                         path: 'markets',

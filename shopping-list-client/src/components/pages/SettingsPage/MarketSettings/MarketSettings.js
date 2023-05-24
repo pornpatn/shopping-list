@@ -44,7 +44,7 @@ function MarketSettings() {
     };
 
     const handleItemClick = (id) => {
-        const selectedMarket = entities.find(item => item.id === id);
+        const selectedMarket = entities.find(item => item._id === id);
         if (selectedMarket) {
             setSelectedItem(selectedMarket);
             setEditDialogOpen(true);
@@ -64,7 +64,7 @@ function MarketSettings() {
     const handleDeleteClick = () => {
         confirm({ description: "This action is permanent!" })
             .then(() => {
-                dispatch(deleteItem({ id: selectedItem.id })).unwrap();
+                dispatch(deleteItem({ id: selectedItem._id })).unwrap();
                 setEditDialogOpen(false);
             })
             .catch(() => {
@@ -73,15 +73,27 @@ function MarketSettings() {
     };
 
     const renderFormContent = () => (
-        <TextField
-            id="name"
-            label="Name"
-            fullWidth
-            required
-            value={selectedItem.name}
-            onChange={(e) => { setSelectedItem({ ...selectedItem, name: e.target.value }) }}
-            margin="normal"
-        />
+        <React.Fragment>
+            <TextField
+                id="name"
+                label="Name"
+                fullWidth
+                required
+                value={selectedItem.name}
+                onChange={(e) => { setSelectedItem({ ...selectedItem, name: e.target.value }) }}
+                margin="normal"
+            />
+            <TextField
+                id="content"
+                label="Content"
+                fullWidth
+                multiline
+                rows={4}
+                value={selectedItem.content}
+                onChange={(e) => { setSelectedItem({ ...selectedItem, content: e.target.value }) }}
+                margin="normal"
+            />
+        </React.Fragment>
     );
 
     return (
@@ -107,11 +119,14 @@ function MarketSettings() {
                     <List>
                         {entities.map((item) => (
                             <ListItemButton
-                                key={item.id}
-                                onClick={() => handleItemClick(item.id)}
+                                key={item._id}
+                                onClick={() => handleItemClick(item._id)}
                                 divider
                             >
-                                <ListItemText primary={item.name} />
+                                <ListItemText
+                                    primary={item.name}
+                                    secondary={item.content}
+                                />
                             </ListItemButton>
                         ))}
                     </List>

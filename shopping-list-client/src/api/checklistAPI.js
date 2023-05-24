@@ -1,133 +1,70 @@
-const db = {};
+const BASE_API = 'http://localhost:3001/api';
 
-let nextCategoryId = 5;
-db.categories = [
-    { id: '1', name: 'Meats' },
-    { id: '2', name: 'Vegetagles' },
-    { id: '3', name: 'Beverages' },
-    { id: '4', name: 'Packages' },
-];
+const doGet = async (api) => fetch(`${BASE_API}${api}`, {
+    method: 'GET',
+});
 
-export const fetchCategories = async () => db.categories;
-
-export const createCategory = async (data) => {
-    const newItem = { ...data, id: nextCategoryId++ };
-    db.categories = [ ...db.categories, newItem ];
-    return newItem;
-};
-
-export const updateCategory = async (data) => {
-    db.categories = db.categories.map(item => item.id === data.id ? data : item);
-    return data;
-}
-
-export const deleteCategory = async (id) => {
-    db.categories = db.categories.filter(item => item.id !== id);
-    return id;
-}
-
-let nextMarketId = 7;
-db.markets = [
-    { id: 1, name: 'Thai Market N & N' },
-    { id: 2, name: 'Wonder Produce' },
-    { id: 3, name: 'S.J Distributors' },
-    { id: 4, name: 'Costco' },
-    { id: 5, name: 'Sysco' },
-    { id: 6, name: 'Restaurant Depot' },
-];
-
-export const fetchMarkets = async () => db.markets;
-
-export const createMarket = async (data) => {
-    const newItem = { ...data, id: nextMarketId++ };
-    db.markets = [ ...db.markets, newItem ];
-    return newItem;
-};
-
-export const updateMarket = async (data) => {
-    db.markets = db.markets.map(item => item.id === data.id ? data : item);
-    return data;
-}
-
-export const deleteMarket = async (id) => {
-    db.markets = db.markets.filter(item => item.id !== id);
-    return id;
-}
-
-let nextProductId = 4;
-db.products = [
-    {
-        id: '1',
-        name: 'Chicken',
-        category: { id: '1', name: 'Meats' },
-        tags: [ { id: '1', name: 'Freezer' } ],
-        unit: 'case',
-        description: 'Regular chicken',
+const doPost = async (api, data = {}) => fetch(`${BASE_API}${api}`, {
+    method: 'POST',
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
     },
-    {
-        id: '2',
-        name: 'Beef',
-        category: { id: '1', name: 'Meats' },
-        tags: [ { id: '1', name: 'Freezer' } ],
-        unit: 'case',
-        description: 'Flap meat',
+    body: JSON.stringify(data)
+});
+
+const doPatch = async (api, data = {}) => fetch(`${BASE_API}${api}/${data._id}`, {
+    method: 'PATCH',
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
     },
-    {
-        id: '3',
-        name: 'Tomato',
-        category: { id: '2', name: 'Vegetagles' },
-        tags: [ { id: '2', name: 'Walkin' } ],
-        unit: 'case',
-        description: 'Roma Tomato',
-    },
-];
+    body: JSON.stringify(data)
+});
 
-export const fetchProducts = async () => db.products;
+const doDelete = async (api, id) => fetch(`${BASE_API}${api}/${id}`, {
+    method: 'DELETE',
+});
 
-export const createProduct = async (data) => {
-    const newItem = { ...data, id: nextProductId++ };
-    db.products = [ ...db.products, newItem ];
-    return newItem;
-};
+// Markets
+export const fetchMarkets = async () => doGet('/market');
 
-export const updateProduct = async (data) => {
-    db.products = db.products.map(item => item.id === data.id ? data : item);
-    return data;
-}
+export const createMarket = async (data) => doPost('/market', data);
 
-export const deleteProduct = async (id) => {
-    db.products = db.products.filter(item => item.id !== id);
-    return id;
-}
+export const updateMarket = async (data) => doPatch('/market', data);
 
-let nextTagId = 4;
-db.tags = [
-    { id: '1', name: 'Freezer' },
-    { id: '2', name: 'Walkin' },
-    { id: '3', name: 'Shelves' },
-];
+export const deleteMarket = async (id) => doDelete('/market', id);
 
-export const fetchTags = async () => db.tags;
+// Products
+export const fetchProducts = async () => doGet('/product');
 
-export const createTag = async (data) => {
-    const newItem = { ...data, id: nextTagId++ };
-    db.tags = [ ...db.tags, newItem ];
-    return newItem;
-};
+export const createProduct = async (data) => doPost('/product', data);
 
-export const updateTag = async (data) => {
-    db.tags = db.tags.map(item => item.id === data.id ? data : item);
-    return data;
-}
+export const updateProduct = async (data) => doPatch('/product', data);
 
-export const deleteTag = async (id) => {
-    db.tags = db.tags.filter(item => item.id !== id);
-    return id;
-}
+export const deleteProduct = async (id) => doDelete('/product', id);
+
+// Categories
+export const fetchCategories = async () => doGet('/category');
+
+// Tags
+export const fetchTags = async () => doGet('/tag');
+
+// Checklist
+export const fetchChecklists = async () => doGet('/checklist/active');
+
+export const fetchChecklistById = async (id) => doGet(`/checklist/${id}`);
+
+export const createChecklist = async (data) => doPost('/checklist', data);
+
+export const updateChecklist = async (data) => doPatch('/checklist', data);
+
+export const deleteChecklist = async (id) => doDelete('checklist', id);
 
 export default {
-    fetchCategories, createCategory, updateCategory, deleteCategory, 
     fetchMarkets, createMarket, updateMarket, deleteMarket,
     fetchProducts, createProduct, updateProduct, deleteProduct,
-    fetchTags, createTag, updateTag, deleteTag,
+    fetchCategories, 
+    fetchTags, 
+    fetchChecklists, fetchChecklistById, createChecklist, updateChecklist, deleteChecklist,
 };

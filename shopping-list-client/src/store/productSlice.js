@@ -1,10 +1,11 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, isRejectedWithValue } from '@reduxjs/toolkit';
 import ChecklistAPI from '../api/checklistAPI';
 
 export const NEW_PRODUCT_TEMPLATE = {
     name: 'New Product',
     category: null,
     tags: [],
+    content: '',
 };
 
 const initialState = {
@@ -13,13 +14,37 @@ const initialState = {
     error: null,
 };
 
-export const fetchProductList = createAsyncThunk('product/fetchProductList', async () => ChecklistAPI.fetchProducts());
+export const fetchProductList = createAsyncThunk('product/fetchProductList', async () => {
+    const response = await ChecklistAPI.fetchProducts();
+    const result = await response.json();
+    if (!result.success) {
+        return isRejectedWithValue(result);
+    }
+    return result.data;
+});
 
-export const createProduct = createAsyncThunk('product/createProduct', async ({ data }) => ChecklistAPI.createProduct(data));
+export const createProduct = createAsyncThunk('product/createProduct', async ({ data }) => {
+    const response = await ChecklistAPI.createProduct(data);
+    const result = await response.json();
+    if (!result.success) {
+        return isRejectedWithValue(result);
+    }
+    return result.data;
+});
 
-export const updateProduct = createAsyncThunk('product/updateProduct', async ({ data }) => ChecklistAPI.updateProduct(data));
+export const updateProduct = createAsyncThunk('product/updateProduct', async ({ data }) => {
+    const response = await ChecklistAPI.updateProduct(data);
+    const result = await response.json();
+    if (!result.success) {
+        return isRejectedWithValue(result);
+    }
+    return result.data;
+});
 
-export const deleteProduct = createAsyncThunk('product/deleteProduct', async ({ id }) => ChecklistAPI.deleteProduct(id));
+export const deleteProduct = createAsyncThunk('product/deleteProduct', async ({ id }) => {
+    await ChecklistAPI.deleteProduct(id);
+    return id;
+});
 
 export const productSlice = createSlice({
     name: 'product',
@@ -34,10 +59,10 @@ export const productSlice = createSlice({
                 state.entities.push(action.payload);
             })
             .addCase(updateProduct.fulfilled, (state, action) => {
-                state.entities = state.entities.map(entity => entity.id === action.payload.id ? action.payload : entity);
+                state.entities = state.entities.map(entity => entity._id === action.payload._id ? action.payload : entity);
             })
             .addCase(deleteProduct.fulfilled, (state, action) => {
-                state.entities = state.entities.filter(entity => entity.id !== action.payload);
+                state.entities = state.entities.filter(entity => entity._id !== action.payload);
             });
     }
 });

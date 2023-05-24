@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -20,9 +21,7 @@ import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import { Dialog, DialogContent, DialogActions, DialogTitle, TextField } from '@mui/material';
 import {
     createChecklist,
-    selectCurrentChecklist,
-    selectOtherInProgressChecklists,
-    selectPreviousChecklists,
+    selectChecklists, 
     NEW_CHECKLIST_TEMPLATE,
 } from '../../../store/checklistSlice';
 
@@ -30,9 +29,10 @@ function ChecklistPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const currentChecklist = useSelector(selectCurrentChecklist);
-    const otherInProgressChecklists = useSelector(selectOtherInProgressChecklists);
-    const previousChecklists = useSelector(selectPreviousChecklists);
+    const unSortedChecklists = useSelector(selectChecklists);
+    const checklists = _.orderBy(unSortedChecklists, (item) => (item.updatedAt || item.createdAt), ['desc']);
+    const currentChecklist = checklists?.[0];
+    const otherInProgressChecklists = checklists.slice(1);
 
     const [newChecklistDialogOpen, setNewChecklistDialogOpen] = useState(false);
     const [name, setName] = useState('');
@@ -59,7 +59,7 @@ function ChecklistPage() {
         };
         dispatch(createChecklist({ data: newItem })).then(({ payload }) => {
             if (payload) {
-                navigate(payload.id);
+                navigate(payload._id);
             }
         });
     };
@@ -69,7 +69,7 @@ function ChecklistPage() {
             return 'no items';
         }
 
-        const text = items.slice(0, 3).map(item => `${item.qty} ${item.product.name}`).join(', ');
+        const text = items.filter(item => item.qty).slice(0, 3).map(item => `${item.qty} ${item.product.name}`).join(', ');
 
         return items.length > 3 ? text + '...' : text;
     }
@@ -95,7 +95,7 @@ function ChecklistPage() {
                             <Card
                                 sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
                             >
-                                <CardActionArea to={currentChecklist.id} component={Link}>
+                                <CardActionArea to={currentChecklist._id} component={Link}>
                                     <CardContent sx={{ flexGrow: 1 }}>
                                         <Typography gutterBottom variant="h5" component="h2">
                                             Continue Checklist
@@ -108,7 +108,7 @@ function ChecklistPage() {
                                     </CardContent>
                                 </CardActionArea>
                                 <CardActions>
-                                    <Button variant='contained' to={currentChecklist.id} component={Link}>Continue</Button>
+                                    <Button variant='contained' to={currentChecklist._id} component={Link}>Continue</Button>
                                 </CardActions>
                             </Card>
                         </Grid>
@@ -146,8 +146,9 @@ function ChecklistPage() {
                 <List disablePadding>
                     {otherInProgressChecklists.map(checklist => (
                         <ListItem
-                            key={checklist.id}
-                            // onClick={() => handleItemClick(item.id)}
+                            key={checklist._id}
+                            to={checklist._id}
+                            component={Link}
                             divider
                             dense
                             disableGutters
@@ -157,10 +158,10 @@ function ChecklistPage() {
                                 </IconButton>
                             }
                         >
-                            <ListItemButton to={checklist.id} component={Link}>
+                            <ListItemButton to={checklist._id} component={Link}>
                                 <ListItemText
                                     primary={checklist.name}
-                                    primaryTypographyProps={{ variant: "subtitle2" }}
+                                    primaryTypographyProps={{ variant: "subtitle2", component: "span" }}
                                     secondary={(
                                         <React.Fragment>
                                             <Typography variant="body2" component="span" sx={{ paddingRight: 1 }}>{formatDate(checklist.modified)}:</Typography>
@@ -175,7 +176,7 @@ function ChecklistPage() {
             ) : (
                 <div>-</div>
             )}
-            <Link to="all">View all checklists</Link>
+            {/* <Link to="all">View all checklists</Link> */}
             {/* Link to view all checklists */}
 
             {/* New checklist dialog */}
@@ -196,7 +197,7 @@ function ChecklistPage() {
                             onChange={(e) => { setName(e.target.value) }}
                             margin="normal"
                         />
-                        <Typography variant="subtitle2">
+                        {/* <Typography variant="subtitle2">
                             Copy from previous checklist:
                         </Typography>
                         <List
@@ -230,7 +231,7 @@ function ChecklistPage() {
                                     </ListItemButton>
                                 </ListItem>
                             ))}
-                        </List>
+                        </List> */}
                     </Box>
                 </DialogContent>
                 <DialogActions>

@@ -16,16 +16,6 @@ const cards = [
         description: 'Manage products',
     },
     {
-        path: 'categories',
-        title: 'Categories',
-        description: 'Manage categories',
-    },
-    {
-        path: 'tags',
-        title: 'Tags',
-        description: 'Manage tags',
-    },
-    {
         path: 'markets',
         title: 'Markets',
         description: 'Manage markets',
@@ -34,7 +24,7 @@ const cards = [
 
 function SettingsCard({ card }) {
     return (
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={12} sm={6}>
             <Card
                 sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
             >

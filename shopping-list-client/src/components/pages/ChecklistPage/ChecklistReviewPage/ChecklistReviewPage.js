@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
@@ -14,26 +14,32 @@ import { selectCategories } from '../../../../store/categorySlice';
 import { selectProducts } from '../../../../store/productSlice';
 import { selectMarkets } from '../../../../store/marketSlice';
 import {
-    selectCurrentChecklist,
+    selectChecklists,
     updateChecklist,
 } from '../../../../store/checklistSlice';
 
 function ChecklistReviewPage() {
     const navigate = useNavigate();
+    const { id: checkListId } = useParams();
     const dispatch = useDispatch();
     const confirm = useConfirm();
     const categories = useSelector(selectCategories);
     const products = useSelector(selectProducts);
     const markets = useSelector(selectMarkets);
-    const checklist = useSelector(selectCurrentChecklist);
-
+    const checklists = useSelector(selectChecklists);
+    const currentChecklist = checklists.find(c => c._id === checkListId);
+    const [checklist, setChecklist] = useState(null);
     const [checkedIds, setCheckedIds] = useState([]);
+
+    useEffect(() => {
+        setChecklist(currentChecklist);
+    }, [currentChecklist]);
 
     const [orderDialogOpen, setOrderDialogOpen] = useState(false);
 
     const handleToggleAll = (e) => {
         if (e.target.checked) {
-            setCheckedIds(checklist.items.map(item => item.product.id));
+            setCheckedIds(checklist.items.map(item => item.product._id));
         } else {
             setCheckedIds([]);
         }
@@ -49,15 +55,15 @@ function ChecklistReviewPage() {
 
     const renderItemRow = (item) => {
         return (
-            <ListItem key={item.product.id} disablePadding disableGutters divider>
+            <ListItem key={item.product._id} disablePadding disableGutters divider>
                 <ListItemButton dense>
                     <ListItemIcon>
                         <Checkbox
                             edge="start"
                             tabIndex={-1}
                             disableRipple
-                            checked={checkedIds.includes(item.product.id)}
-                            onChange={() => handleToggle(item.product.id)}
+                            checked={checkedIds.includes(item.product._id)}
+                            onChange={() => handleToggle(item.product._id)}
                         />
                     </ListItemIcon>
                     <ListItemText primary={
@@ -84,19 +90,19 @@ function ChecklistReviewPage() {
     };
 
     const renderByCategory = (category) => {
-        const productsToRender = products.filter(product => product.category?.id === category.id);
+        const productsToRender = products.filter(product => product.category === category);
         if (productsToRender.length === 0) {
             return null;
         }
 
-        const productIds = productsToRender.map(product => product.id);
-        const itemsToRender = checklist.items.filter(item => (item.qty > 0) && productIds.includes(item.product.id));
+        const productIds = productsToRender.map(product => product._id);
+        const itemsToRender = checklist.items.filter(item => (item.qty > 0) && productIds.includes(item.product._id));
         if (itemsToRender.length === 0) {
             return null;
         }
 
         return (
-            <List key={category.id} dense disablePadding subheader={category.name}>
+            <List key={category} dense disablePadding subheader={category}>
                 {itemsToRender.map(item => renderItemRow(item))}
             </List>
         );
@@ -110,7 +116,7 @@ function ChecklistReviewPage() {
                     status: 'done',
                 }
             })).then(() => {
-                navigate("/checklist");
+                navigate("/checklists");
             });
         };
 
@@ -137,7 +143,6 @@ function ChecklistReviewPage() {
         setOrderDialogOpen(false);
     };
 
-    console.log('review checklist: ', checklist);
     if (!checklist) {
         return (
             <div>

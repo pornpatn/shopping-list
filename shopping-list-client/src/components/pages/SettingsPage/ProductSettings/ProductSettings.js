@@ -23,8 +23,8 @@ import {
     selectProducts as selectItems,
     NEW_PRODUCT_TEMPLATE as NEW_ITEM_TEMPLETE,
 } from '../../../../store/productSlice';
-import { selectCategories } from '../../../../store/categorySlice';
-import { selectTags } from '../../../../store/tagSlice';
+import { selectCategories, fetchCategoryList } from '../../../../store/categorySlice';
+import { selectTags, fetchTagList } from '../../../../store/tagSlice';
 
 function ProductSettings() {
     const dispatch = useDispatch();
@@ -34,7 +34,6 @@ function ProductSettings() {
     const [selectedItem, setSelectedItem] = useState({});
 
     const [itemCategory, setItemCategory] = useState(null);
-    const [itemCategoryCustom, setItemCategoryCustom] = useState(null);
 
     const [itemTags, setItemTags] = useState([]);
 
@@ -52,13 +51,13 @@ function ProductSettings() {
         {
             name: 'category',
             label: 'Filter by Categories',
-            options: categories.map(category => ({ id: category.id, label: category.name })),
+            options: categories.map(category => ({ id: category, label: category })),
             selected: checkedCategories,
         },
         {
             name: 'tag',
             label: 'Filter by Tags',
-            options: tags.map(tag => ({ id: tag.id, label: tag.name })),
+            options: tags.map(tag => ({ id: tag, label: tag })),
             selected: checkedTags,
         }
     ];
@@ -108,11 +107,16 @@ function ProductSettings() {
         const searchTerm = search.toLowerCase();
 
         const isMatched = (product) => product.name.toLowerCase().includes(searchTerm)
-            && ((checkedCategories.length === 0) || checkedCategories.includes(product.category.id))
-            && ((checkedTags.length === 0) || product.tags.find(tag => checkedTags.includes(tag.id)));
+            && ((checkedCategories.length === 0) || checkedCategories.includes(product.category))
+            && ((checkedTags.length === 0) || product.tags.find(tag => checkedTags.includes(tag)));
 
         return entities.filter(product => isMatched(product));
     }, [entities, search, checkedCategories, checkedTags]);
+
+    const refreshCategoriesAndTags = () => {
+        dispatch(fetchCategoryList());
+        dispatch(fetchTagList());
+    };
 
     const handleCreateClick = () => {
         setSelectedItem({ ...NEW_ITEM_TEMPLETE });
@@ -129,20 +133,20 @@ function ProductSettings() {
         e.preventDefault();
         const newItem = {
             ...selectedItem,
-            category: itemCategoryCustom ? { name: itemCategoryCustom } : itemCategory,
-            tags: itemTags.map(tag => tags.find(t => t.name === tag) ?? { name: tag }),
+            category: itemCategory,
+            tags: itemTags,
         };
         dispatch(createItem({ data: newItem })).unwrap();
         setCreateDialogOpen(false);
+        refreshCategoriesAndTags();
     };
 
     const handleItemClick = (id) => {
-        const foundItem = entities.find(item => item.id === id);
+        const foundItem = entities.find(item => item._id === id);
         if (foundItem) {
             setSelectedItem(foundItem);
             setItemCategory(foundItem.category);
-            setItemCategoryCustom(null);
-            setItemTags(foundItem.tags.map(tag => tag.name));
+            setItemTags(foundItem.tags);
             setEditDialogOpen(true);
         }
     };
@@ -156,17 +160,18 @@ function ProductSettings() {
         const updatedItem = {
             ...selectedItem,
             category: itemCategory,
-            tags: itemTags.map(tag => tags.find(t => t.name === tag) ?? { name: tag }),
+            tags: itemTags,
         };
-        console.log('updated item: ', updatedItem);
-        dispatch(updateItem({ data: updatedItem })).unwrap();
-        setEditDialogOpen(false);
+        dispatch(updateItem({ data: updatedItem })).then(() => {
+            setEditDialogOpen(false);
+            refreshCategoriesAndTags();
+        });
     };
 
     const handleDeleteClick = () => {
         confirm({ description: "This action is permanent!" })
             .then(() => {
-                dispatch(deleteItem({ id: selectedItem.id })).unwrap();
+                dispatch(deleteItem({ id: selectedItem._id })).unwrap();
                 setEditDialogOpen(false);
             })
             .catch(() => {
@@ -181,13 +186,13 @@ function ProductSettings() {
 
         return items.map(item => (
             <ListItemButton
-                key={item.id}
-                onClick={() => handleItemClick(item.id)}
+                key={item._id}
+                onClick={() => handleItemClick(item._id)}
                 divider
             >
                 <ListItemText
                     primary={item.name}
-                    secondary={item.tags.map(tag => tag.name).join(', ')}
+                    secondary={item.tags.join(', ')}
                 />
             </ListItemButton>
         ));
@@ -195,13 +200,13 @@ function ProductSettings() {
 
     const renderItemsByCategories = () => {
         return categories.map((category) => {
-            const itemsToRender = products.filter(item => item.category?.id === category.id);
+            const itemsToRender = products.filter(item => item.category === category);
             if (itemsToRender.length === 0) {
                 return null;
             }
 
             return (
-                <List key={category.id} subheader={<ListSubheader>{category.name}</ListSubheader>}>
+                <List key={category} subheader={<ListSubheader>{category}</ListSubheader>}>
                     {renderItems(itemsToRender)}
                 </List>
             )
@@ -209,7 +214,7 @@ function ProductSettings() {
     };
 
     const renderItemsWithoutCategories = () => {
-        const itemsToRender = products.filter(item => item.category === null);
+        const itemsToRender = products.filter(item => !categories.includes(item.category));
         if (itemsToRender.length === 0) {
             return null;
         }
@@ -241,12 +246,11 @@ function ProductSettings() {
                 value={itemCategory}
                 onChange={(_event, newValue) => {
                     setItemCategory(newValue);
-                    setItemCategoryCustom(null);
                 }}
                 onInputChange={(_event, newInputValue) => {
-                    setItemCategoryCustom(newInputValue);
+                    setItemCategory(newInputValue);
                 }}
-                options={categories.map(category => ({ ...category, label: category.name }))}
+                options={categories}
                 renderInput={(params) => (
                     <TextField {...params} label="Category" margin="normal" />
                 )}
@@ -262,7 +266,7 @@ function ProductSettings() {
                 onChange={(_event, newValue) => {
                     setItemTags(newValue);
                 }}
-                options={tags.map(tag => tag.name)}
+                options={tags}
                 renderTags={(value, getTagProps) =>
                     value.map((option, index) => (
                         <Chip variant="outlined" label={option} {...getTagProps({ index })} />
@@ -271,6 +275,16 @@ function ProductSettings() {
                 renderInput={(params) => (
                     <TextField {...params} label="Tags" margin="normal" />
                 )}
+            />
+            <TextField
+                id="content"
+                label="Content"
+                fullWidth
+                multiline
+                rows={4}
+                value={selectedItem.content}
+                onChange={(e) => { setSelectedItem({ ...selectedItem, content: e.target.value }) }}
+                margin="normal"
             />
         </React.Fragment>
     );

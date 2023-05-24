@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
@@ -24,7 +24,7 @@ import {
     createProduct,
     selectProducts,
 } from '../../../../store/productSlice';
-import { selectCurrentChecklist } from '../../../../store/checklistSlice';
+import { selectChecklists, updateChecklist } from '../../../../store/checklistSlice';
 import FormDialog from '../../../molecules/FormDialog';
 
 const EMPTY_ITEM = {
@@ -34,11 +34,13 @@ const EMPTY_ITEM = {
 
 function ChecklistCheckingPage() {
     const navigate = useNavigate();
+    const { id: checkListId } = useParams();
     const dispatch = useDispatch();
     const categories = useSelector(selectCategories);
     const tags = useSelector(selectTags);
     const allProducts = useSelector(selectProducts);
-    const currentChecklist = useSelector(selectCurrentChecklist);
+    const checklists = useSelector(selectChecklists);
+    const currentChecklist = checklists.find(c => c._id === checkListId);
 
     const [checklist, setChecklist] = useState(null);
     const [nameEditMode, setNameEditMode] = useState(false);
@@ -58,13 +60,13 @@ function ChecklistCheckingPage() {
         {
             name: 'category',
             label: 'Filter by Categories',
-            options: categories.map(category => ({ id: category.id, label: category.name })),
+            options: categories.map(category => ({ id: category, label: category })),
             selected: checkedCategories,
         },
         {
             name: 'tag',
             label: 'Filter by Tags',
-            options: tags.map(tag => ({ id: tag.id, label: tag.name })),
+            options: tags.map(tag => ({ id: tag, label: tag })),
             selected: checkedTags,
         }
     ];
@@ -82,8 +84,8 @@ function ChecklistCheckingPage() {
         const searchTerm = search.toLowerCase();
 
         const isMatched = (product) => product.name.toLowerCase().includes(searchTerm)
-            && ((checkedCategories.length === 0) || checkedCategories.includes(product.category.id))
-            && ((checkedTags.length === 0) || product.tags.find(tag => checkedTags.includes(tag.id)));
+            && ((checkedCategories.length === 0) || checkedCategories.includes(product.category))
+            && ((checkedTags.length === 0) || product.tags.find(tag => checkedTags.includes(tag)));
 
         return allProducts.filter(product => isMatched(product));
     }, [allProducts, search, checkedCategories, checkedTags]);
@@ -94,14 +96,14 @@ function ChecklistCheckingPage() {
 
     const toggleNameMode = () => setNameEditMode(!nameEditMode);
 
-    const findItemByProduct = (product) => checklist.items.find(item => item.product.id === product.id);
+    const findItemByProduct = (product) => checklist.items.find(item => item.product._id === product._id);
 
     const handleQtyClick = (product) => {
         const item = findItemByProduct(product);
         if (item) {
             setChecklist({
                 ...checklist,
-                items: checklist.items.map(item => item.product.id === product.id ? {
+                items: checklist.items.map(item => item.product._id === product._id ? {
                     ...item,
                     qty: Number(item.qty) + 1,
                 } : item),
@@ -124,7 +126,7 @@ function ChecklistCheckingPage() {
         if (item) {
             setChecklist({
                 ...checklist,
-                items: checklist.items.map(item => item.product.id === product.id ? {
+                items: checklist.items.map(item => item.product._id === product._id ? {
                     ...item,
                     checked: !item.checked,
                 } : item),
@@ -159,7 +161,7 @@ function ChecklistCheckingPage() {
         if (item) {
             setChecklist({
                 ...checklist,
-                items: checklist.items.map(item => item.product.id === selectedProduct.id ? {
+                items: checklist.items.map(item => item.product._id === selectedProduct._id ? {
                     ...item,
                     ...selectedItem,
                 } : item),
@@ -215,7 +217,7 @@ function ChecklistCheckingPage() {
         const item = findItemByProduct(product) || EMPTY_ITEM;
 
         return (
-            <div key={product.id} style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid lightgray' }}>
+            <div key={product._id} style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid lightgray' }}>
                 <div style={{ width: 40, textAlign: 'center' }}>
                     {(item.qty || item.checked) ? (
                         <ButtonBase
@@ -262,18 +264,18 @@ function ChecklistCheckingPage() {
     };
 
     const renderByCategory = (category) => {
-        const productsToRender = products.filter(product => product.category?.id === category.id);
+        const productsToRender = products.filter(product => product.category === category);
 
         if (productsToRender.length === 0) {
             return null;
         }
 
         return (
-            <Accordion key={category.id} disableGutters defaultExpanded>
+            <Accordion key={category} disableGutters defaultExpanded>
                 <AccordionSummary
                     expandIcon={<ExpandMoreIcon />}
                 >
-                    {category.name}
+                    {category}
                 </AccordionSummary>
                 <AccordionDetails>
                     <div>
@@ -368,13 +370,21 @@ function ChecklistCheckingPage() {
                 <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'center', gap: 1 }}>
                     <Button
                         variant="outlined"
+                        onClick={() => {
+                            dispatch(updateChecklist({ data: checklist }));
+                        }}
                     >
                         Save
                     </Button>
                     <Button
                         variant="contained"
-                        to={'review'}
-                        component={Link}
+                        // to={'review'}
+                        // component={Link}
+                        onClick={() => {
+                            dispatch(updateChecklist({ data: checklist })).then(() => {
+                                navigate('review');
+                            });
+                        }}
                     >
                         Review
                     </Button>
