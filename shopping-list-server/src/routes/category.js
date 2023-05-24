@@ -7,5 +7,9 @@ module.exports = router;
 
 router.get('/', async (req, res) => {
     const categories = await Product.find().distinct('category');
-    res.send({ message: "Categories retrived successfully", categories });
+    res.send({
+        success: true,
+        message: "Categories retrived successfully",
+        data: categories
+    });
 });
