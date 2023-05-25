@@ -50,7 +50,9 @@ function SessionBox() {
             <IconButton
                 onClick={handleProfileClick}
             >
-                <Avatar alt={profile.name} src={profile.picture} />
+                <Avatar alt={profile.name} src={profile.picture} imgProps={{
+                    referrerPolicy: "no-referrer"
+                }}/>
             </IconButton>
             <Popover
                 open={profileOpen}
