@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
@@ -8,6 +8,7 @@ import CardActions from '@mui/material/CardActions';
 import CardActionArea from '@mui/material/CardActionArea';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import useSessionHook from '../../../hooks/useSessionHook';
 
 const cards = [
     {
@@ -47,6 +48,14 @@ function SettingsCard({ card }) {
 }
 
 function SettingsPage() {
+    const navigate = useNavigate();
+    const { isLogin } = useSessionHook();
+    useEffect(() => {
+        if (!isLogin) {
+            navigate("/login");
+        }
+    }, [isLogin, navigate]);
+
     return (
         <Container maxWidth="xl">
             <Typography

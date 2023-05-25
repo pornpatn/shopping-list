@@ -61,10 +61,12 @@ export const updateChecklist = async (data) => doPatch('/checklist', data);
 
 export const deleteChecklist = async (id) => doDelete('checklist', id);
 
-export default {
-    fetchMarkets, createMarket, updateMarket, deleteMarket,
+const ChecklistAPI = {
+fetchMarkets, createMarket, updateMarket, deleteMarket,
     fetchProducts, createProduct, updateProduct, deleteProduct,
     fetchCategories, 
     fetchTags, 
     fetchChecklists, fetchChecklistById, createChecklist, updateChecklist, deleteChecklist,
 };
+
+export default ChecklistAPI;

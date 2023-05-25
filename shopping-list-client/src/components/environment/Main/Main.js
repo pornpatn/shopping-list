@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
     createBrowserRouter,
     RouterProvider,
@@ -24,17 +24,25 @@ const getRouter = (dispatch) => createBrowserRouter([
     {
         path: '/',
         element: <Layout />,
-        loader: () => {
-            return null;
-        },
         children: [
             {
                 index: true,
+                element: <div>Welcome</div>,
+            },
+            {
+                path: 'login',
                 element: <LoginPage />,
             },
             {
                 path: 'checklists',
                 element: <Outlet />,
+                loader: () => {
+                    dispatch(fetchCategoryList());
+                    dispatch(fetchTagList());
+                    dispatch(fetchProductList());
+                    dispatch(fetchMarketList());
+                    return null;
+                },        
                 children: [
                     {
                         index: true,
@@ -64,7 +72,7 @@ const getRouter = (dispatch) => createBrowserRouter([
             },
             {
                 path: 'settings',
-                element: <Outlet />,
+                element: <Outlet />,       
                 children: [
                     {
                         index: true,
@@ -72,11 +80,19 @@ const getRouter = (dispatch) => createBrowserRouter([
                     },
                     {
                         path: 'products',
-                        element: <ProductSettings />
+                        element: <ProductSettings />,
+                        loader: () => {
+                            dispatch(fetchProductList());
+                            return null;
+                        }
                     },
                     {
                         path: 'markets',
-                        element: <MarketSettings />
+                        element: <MarketSettings />,
+                        loader: () => {
+                            dispatch(fetchMarketList());
+                            return null;
+                        }        
                     },
                 ],
             },
@@ -92,13 +108,6 @@ const getRouter = (dispatch) => createBrowserRouter([
 
 function Main() {
     const dispatch = useDispatch();
-
-    useEffect(() => {
-        dispatch(fetchCategoryList());
-        dispatch(fetchTagList());
-        dispatch(fetchProductList());
-        dispatch(fetchMarketList());
-    }, [dispatch]);
 
     return (
         <RouterProvider router={getRouter(dispatch)} />

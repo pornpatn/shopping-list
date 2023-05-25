@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import moment from 'moment';
@@ -24,10 +24,18 @@ import {
     selectChecklists, 
     NEW_CHECKLIST_TEMPLATE,
 } from '../../../store/checklistSlice';
+import useSessionHook from '../../../hooks/useSessionHook';
 
 function ChecklistPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    const { isLogin } = useSessionHook();
+    useEffect(() => {
+        if (!isLogin) {
+            navigate("/login");
+        }
+    }, [isLogin, navigate]);
 
     const unSortedChecklists = useSelector(selectChecklists);
     const checklists = _.orderBy(unSortedChecklists, (item) => (item.updatedAt || item.createdAt), ['desc']);
@@ -147,13 +155,14 @@ function ChecklistPage() {
                     {otherInProgressChecklists.map(checklist => (
                         <ListItem
                             key={checklist._id}
-                            to={checklist._id}
-                            component={Link}
                             divider
                             dense
                             disableGutters
                             secondaryAction={
-                                <IconButton edge="end" size="large" aria-label="continue">
+                                <IconButton
+                                    edge="end" size="large" aria-label="continue"
+                                    to={checklist._id} component={Link}
+                                >
                                     <ArrowRightIcon fontSize="inherit" />
                                 </IconButton>
                             }

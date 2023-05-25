@@ -25,6 +25,7 @@ import {
     selectProducts,
 } from '../../../../store/productSlice';
 import { selectChecklists, updateChecklist } from '../../../../store/checklistSlice';
+import useSessionHook from '../../../../hooks/useSessionHook';
 import FormDialog from '../../../molecules/FormDialog';
 
 const EMPTY_ITEM = {
@@ -36,6 +37,14 @@ function ChecklistCheckingPage() {
     const navigate = useNavigate();
     const { id: checkListId } = useParams();
     const dispatch = useDispatch();
+    
+    const { isLogin } = useSessionHook();
+    useEffect(() => {
+        if (!isLogin) {
+            navigate("/login");
+        }
+    }, [isLogin, navigate]);
+
     const categories = useSelector(selectCategories);
     const tags = useSelector(selectTags);
     const allProducts = useSelector(selectProducts);

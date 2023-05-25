@@ -17,6 +17,7 @@ import {
     selectChecklists,
     updateChecklist,
 } from '../../../../store/checklistSlice';
+import useSessionHook from '../../../../hooks/useSessionHook';
 
 function ChecklistReviewPage() {
     const navigate = useNavigate();
@@ -30,6 +31,13 @@ function ChecklistReviewPage() {
     const currentChecklist = checklists.find(c => c._id === checkListId);
     const [checklist, setChecklist] = useState(null);
     const [checkedIds, setCheckedIds] = useState([]);
+
+    const { isLogin } = useSessionHook();
+    useEffect(() => {
+        if (!isLogin) {
+            navigate("/login");
+        }
+    }, [isLogin, navigate]);
 
     useEffect(() => {
         setChecklist(currentChecklist);

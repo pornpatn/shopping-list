@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { createTheme, styled, ThemeProvider } from '@mui/material/styles';
 import MuiAppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -20,6 +20,7 @@ import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import ChecklistIcon from '@mui/icons-material/Checklist';
+import SessionBox from '../../molecules/SessionBox';
 
 import styles from './styles.layout.css';
 
@@ -85,6 +86,8 @@ function Copyright() {
 }
 
 function Layout() {
+    const { pathname } = useLocation();
+
     const [open, setOpen] = useState(false);
 
     const handleDrawerOpen = () => {
@@ -94,6 +97,10 @@ function Layout() {
     const handleDrawerClose = () => {
         setOpen(false);
     };
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
 
     return (
         <ThemeProvider theme={theme}>
@@ -114,7 +121,7 @@ function Layout() {
                             Shopping List
                         </Typography>
                         <Box sx={{ flexGrow: 1 }} />
-                        SessionBox
+                        <SessionBox />
                     </Toolbar>
                 </AppBar>
                 <Drawer

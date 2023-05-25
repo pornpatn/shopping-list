@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
@@ -25,6 +26,7 @@ import {
 } from '../../../../store/productSlice';
 import { selectCategories, fetchCategoryList } from '../../../../store/categorySlice';
 import { selectTags, fetchTagList } from '../../../../store/tagSlice';
+import useSessionHook from '../../../../hooks/useSessionHook';
 
 function ProductSettings() {
     const dispatch = useDispatch();
@@ -41,6 +43,14 @@ function ProductSettings() {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
 
     const confirm = useConfirm();
+
+    const navigate = useNavigate();
+    const { isLogin } = useSessionHook();
+    useEffect(() => {
+        if (!isLogin) {
+            navigate("/login");
+        }
+    }, [isLogin, navigate]);
 
     const [search, setSearch] = useState("");
 
