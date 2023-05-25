@@ -12,7 +12,7 @@ import { useConfirm } from "material-ui-confirm";
 import FormDialog from '../../../molecules/FormDialog';
 import { selectCategories } from '../../../../store/categorySlice';
 import { selectProducts } from '../../../../store/productSlice';
-import { selectMarkets } from '../../../../store/marketSlice';
+// import { selectMarkets } from '../../../../store/marketSlice';
 import {
     selectChecklists,
     updateChecklist,
@@ -26,7 +26,7 @@ function ChecklistReviewPage() {
     const confirm = useConfirm();
     const categories = useSelector(selectCategories);
     const products = useSelector(selectProducts);
-    const markets = useSelector(selectMarkets);
+    // const markets = useSelector(selectMarkets);
     const checklists = useSelector(selectChecklists);
     const currentChecklist = checklists.find(c => c._id === checkListId);
     const [checklist, setChecklist] = useState(null);
@@ -137,9 +137,9 @@ function ChecklistReviewPage() {
             });
     };
 
-    const handleOrderClick = () => {
-        setOrderDialogOpen(true);
-    };
+    // const handleOrderClick = () => {
+    //     setOrderDialogOpen(true);
+    // };
 
     const handleOrderDialogClose = () => {
         setOrderDialogOpen(false);
@@ -209,13 +209,13 @@ function ChecklistReviewPage() {
                 >
                     Back
                 </Button>
-                <Button
+                {/* <Button
                     variant="contained"
                     color="primary"
                     onClick={handleOrderClick}
                 >
                     Order
-                </Button>
+                </Button> */}
                 <Button
                     variant="contained"
                     color="primary"

@@ -160,14 +160,14 @@ function Layout() {
                                 <ListItemText primary="Checklists" />
                             </ListItemButton>
                         </ListItem>
-                        <ListItem disablePadding button component={NavLink} to="/orders" onClick={handleDrawerClose}>
+                        {/* <ListItem disablePadding button component={NavLink} to="/orders" onClick={handleDrawerClose}>
                             <ListItemButton>
                                 <ListItemIcon>
                                     <InboxIcon />
                                 </ListItemIcon>
                                 <ListItemText primary="Orders" />
                             </ListItemButton>
-                        </ListItem>
+                        </ListItem> */}
                         <ListItem disablePadding button component={NavLink} to="/settings" onClick={handleDrawerClose}>
                             <ListItemButton>
                                 <ListItemIcon>
